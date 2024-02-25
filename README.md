@@ -1,2 +1,2 @@
 # fullStackOpen
-These are my commits and assignment within the Full Stack Open course
+These are my commits and assignment submissions within the Full Stack Open course
