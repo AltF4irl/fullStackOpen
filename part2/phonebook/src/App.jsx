@@ -1,8 +1,8 @@
 import { useState,useEffect } from 'react'
-import axios from 'axios'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import People from './components/People'
+import personService from './services/personService'
 
 const App = () => {
   
@@ -14,8 +14,8 @@ const App = () => {
 
   useEffect(() => {
     console.log('Effect')
-    axios
-    .get('http://localhost:3001/persons')
+    personService
+    .getAll()
     .then(res => {
       console.log('Fulfilled')
       console.log(res.data)
@@ -35,7 +35,6 @@ const App = () => {
     addSubmitHandler: (e) => {
       e.preventDefault()
       const personObject = {
-        id: newName.split(' ')[0],
         name: newName,
         number: newNumber
       }
@@ -45,11 +44,15 @@ const App = () => {
         setNewName('')
         setNewNumber('')
       } else {
-        const personHolder = person.concat(personObject)
-        setPerson(person.concat(personObject))
-        setNewName('')
-        setNewNumber('')
-        setSearchList(personHolder)
+        personService
+          .create(personObject)
+          .then(res => {
+            const personHolder = person.concat(res.data)
+            setPerson(person.concat(res.data))
+            setNewName('')
+            setNewNumber('')
+            setSearchList(personHolder)
+          })
       } 
     },
     seachChangeHandler: (e) => {
@@ -57,9 +60,18 @@ const App = () => {
       e.target.value.length > 0 
       ? setSearchList(person.filter(prs => prs.name.toLowerCase().includes(e.target.value)))
       : setSearchList(person)
+    },
+    deletePersonEventHandler: (id) => {
+      personService
+      .remove(id)
+      .then(res => {
+      console.log(res.data)
+      setPerson(person.filter(prs => prs.id !== id))
+      setSearchList(person.filter(prs => prs.id !== id))
+      })
     }
   }
-  const {nameChangeHandler, addSubmitHandler, numberChangeHandler, seachChangeHandler} = eventHandler
+  const {nameChangeHandler, addSubmitHandler, numberChangeHandler, seachChangeHandler, deletePersonEventHandler} = eventHandler
 
   return (
     <div>
@@ -72,7 +84,10 @@ const App = () => {
       numberValue={newNumber} numberChange={numberChangeHandler}
       />
       <h2>Numbers</h2>
-      <People list={searchList} />
+      <People 
+      list={searchList} 
+      onClick={deletePersonEventHandler}
+      />
     </div>
   )
 }

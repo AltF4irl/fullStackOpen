@@ -1,9 +1,13 @@
 import Number from './Number'
 
-const People  = ({list}) => {
+const People  = ({list, onClick}) => {
     return (
         <ul>
-            {list.map(prs => <Number key={prs.id} person={prs} />)}
+            {list.map(prs => <Number 
+            key={prs.id} 
+            person={prs} 
+            onClick={() => onClick(prs.id)}
+            />)}
         </ul>
     )
 }
