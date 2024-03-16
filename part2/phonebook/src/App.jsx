@@ -6,11 +6,11 @@ import personService from './services/personService'
 
 const App = () => {
   
-  const [person, setPerson] = useState([])
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
-  const [search, setsearch] = useState('')
-  const [searchList, setSearchList] = useState([])
+  const [person, setPerson] = useState([]) //Array of all person objects
+  const [newName, setNewName] = useState('') //Name field state
+  const [newNumber, setNewNumber] = useState('') //Number field state
+  const [search, setsearch] = useState('') //Search bar state
+  const [searchList, setSearchList] = useState([]) //Array of searched people using search bar
 
   useEffect(() => {
     console.log('Effect')
@@ -39,8 +39,15 @@ const App = () => {
         number: newNumber
       }
       console.log('new person:', personObject)
-      if (person.filter(prs => prs.name === newName).length >0) {
-        alert(`${newName} is already added to phonebook`)
+      const duplicatePerson = person.filter(prs => prs.name === newName)
+      if (duplicatePerson.length >0) {
+        if (confirm(`${newName} is already added to phonebook, replace the old number with the new one?`)) {
+          personService
+            .update(duplicatePerson[0].id, personObject)
+            .then(res => {
+              setSearchList(person.map(prs => prs.id === duplicatePerson[0].id? res.data : prs))
+            })
+        }
         setNewName('')
         setNewNumber('')
       } else {
@@ -58,7 +65,7 @@ const App = () => {
     seachChangeHandler: (e) => {
       setsearch(e.target.value)
       e.target.value.length > 0 
-      ? setSearchList(person.filter(prs => prs.name.toLowerCase().includes(e.target.value)))
+      ? setSearchList(person.filter(prs => prs.name.toLowerCase().includes(e.target.value.toLowerCase())))
       : setSearchList(person)
     },
     deletePersonEventHandler: (id) => {
