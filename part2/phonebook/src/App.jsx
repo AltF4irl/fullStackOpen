@@ -3,6 +3,7 @@ import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import People from './components/People'
 import personService from './services/personService'
+import Notification from './components/Notification'
 
 const App = () => {
   
@@ -11,6 +12,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('') //Number field state
   const [search, setsearch] = useState('') //Search bar state
   const [searchList, setSearchList] = useState([]) //Array of searched people using search bar
+  const [notificationMessage, setNotificationMessage] = useState({})
 
   useEffect(() => {
     console.log('Effect')
@@ -46,6 +48,13 @@ const App = () => {
             .update(duplicatePerson[0].id, personObject)
             .then(res => {
               setSearchList(person.map(prs => prs.id === duplicatePerson[0].id? res.data : prs))
+              setNotificationMessage({
+                message: `${res.data.name}'s number has been updated.`,
+                type: 'success'
+              })
+              setTimeout(() => {
+                setNotificationMessage({})
+              }, 5000)
             })
         }
         setNewName('')
@@ -59,6 +68,13 @@ const App = () => {
             setNewName('')
             setNewNumber('')
             setSearchList(personHolder)
+            setNotificationMessage({
+              message: `${res.data.name} has been added.`,
+              type: 'success'
+            })
+            setTimeout(() => {
+              setNotificationMessage({})
+            }, 5000)
           })
       } 
     },
@@ -69,12 +85,30 @@ const App = () => {
       : setSearchList(person)
     },
     deletePersonEventHandler: (id) => {
+      const current = person.find(prs => prs.id === id)
       personService
       .remove(id)
       .then(res => {
-      console.log(res.data)
-      setPerson(person.filter(prs => prs.id !== id))
-      setSearchList(person.filter(prs => prs.id !== id))
+        console.log(res.data)
+        setPerson(person.filter(prs => prs.id !== id))
+        setSearchList(person.filter(prs => prs.id !== id))
+        setNotificationMessage({
+          message: `${res.data.name} has been removed.`,
+          type: 'success'
+        })
+          setTimeout(() => {
+          setNotificationMessage({})
+        }, 5000)
+      })
+      .catch(err => {
+        setNotificationMessage({
+          message: `${current.name} has already been removed from the server.`,
+          type: 'error'
+        })
+        setSearchList(searchList.filter(person => person.id !== id))
+          setTimeout(() => {
+          setNotificationMessage({})
+        }, 5000)
       })
     }
   }
@@ -85,6 +119,7 @@ const App = () => {
       <h2>Phonebook</h2>
       <Filter value={search} onChange={seachChangeHandler} />
       <h2>Add a New Contact</h2>
+      <Notification message={notificationMessage.message} type={notificationMessage.type} />
       <PersonForm 
       onSubmit={addSubmitHandler} 
       nameValue={newName} nameChange={nameChangeHandler}
