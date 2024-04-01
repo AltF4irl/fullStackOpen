@@ -76,6 +76,15 @@ const App = () => {
               setNotificationMessage({})
             }, 5000)
           })
+          .catch(err => {
+            setNotificationMessage({
+              message: err.response.data.error,
+              type: 'error'
+            })
+            setTimeout(() => {
+              setNotificationMessage({})
+            }, 5000)
+          })
       } 
     },
     seachChangeHandler: (e) => {
